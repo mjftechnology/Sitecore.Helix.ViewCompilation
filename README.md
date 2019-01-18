@@ -1,6 +1,6 @@
 # Sitecorium.Helix.ViewCompilation
 
-This project demonstrates an issue using the StackExchange and RazorGenertaot Precompilation libraries with Helix Features. In a nutshell, if two views in two separate Feature assemblies share the same virtual path, the view in the assembly with the alphabetically last assembly name will be served. 
+This project demonstrates an issue using the StackExchange and RazorGenerator Precompilation libraries with Helix Features. In a nutshell, if two views in two separate Feature assemblies share the same virtual path, the view in the assembly with the alphabetically last assembly name will be served. 
 
 ### Prerequisites
 

@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>StackExchange.Precompilation.Metaprogramming</name>
+    </assembly>
+    <members>
+        <member name="T:StackExchange.Precompilation.AppDomainHelper">
+            <summary>
+            Precompilation helper methods.
+            </summary>
+        </member>
+        <member name="F:StackExchange.Precompilation.AppDomainHelper.CsCompilationAppDomainName">
+            <summary>
+            The friednly name of the <see cref="T:System.AppDomain"/> hosting the compilation.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.AppDomainHelper.IsPrecompilation(System.AppDomain)">
+            <summary>
+            </summary>
+            <param name="appDomain"></param>
+            <returns>Returns <c>true</c> if the <paramref name="appDomain"/> is a Precompilation domain.</returns>
+        </member>
+        <member name="T:StackExchange.Precompilation.CompileModuleElement">
+            <summary>
+            A compile module configuration element.
+            </summary>
+            <seealso cref="T:StackExchange.Precompilation.ICompileModule"/>
+        </member>
+        <member name="P:StackExchange.Precompilation.CompileModuleElement.Type">
+            <summary>
+            The type of the <see cref="T:StackExchange.Precompilation.ICompileModule"/> to be loaded at compile time.
+            </summary>
+        </member>
+        <member name="T:StackExchange.Precompilation.CompileModulesCollection">
+            <summary>
+            A collection of <see cref="T:StackExchange.Precompilation.CompileModuleElement"/> instances.
+            </summary>
+        </member>
+        <member name="T:StackExchange.Precompilation.ICompileModule">
+            <summary>
+            Allows plugging into the compilation pipeline. Has to be registered in app/web.config
+            </summary>
+            <remarks>
+              <example>
+                <code language="xml"><![CDATA[
+            <configuration>
+              <configSections>
+                <section name="stackExchange.precompiler" type="StackExchange.Precompilation.PrecompilerSection, StackExchange.Precompilation.Metaprogramming" />
+              </configSections>
+              <stackExchange.precompiler>
+                <modules>
+                  <add type="MyAssembly.MyModule, MyAssembly" />
+                </modules>
+              </stackExchange.precompiler>
+            </coniguration>]]>
+                </code>
+              </example>
+            </remarks>
+        </member>
+        <member name="M:StackExchange.Precompilation.ICompileModule.BeforeCompile(StackExchange.Precompilation.BeforeCompileContext)">
+            <summary>
+            Called before anything is emitted
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="M:StackExchange.Precompilation.ICompileModule.AfterCompile(StackExchange.Precompilation.AfterCompileContext)">
+            <summary>
+            Called after the compilation is emitted. Changing the compilation will not have any effect at this point
+            but the assembly can be changed before it is saved on disk or loaded into memory.
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="T:StackExchange.Precompilation.PrecompilerSection">
+            <summary>
+            Defines the <c>stackExchange.precompiler</c> <see cref="T:System.Configuration.ConfigurationSection"/>.
+            </summary>
+            <seealso cref="T:StackExchange.Precompilation.ICompileModule"/>
+        </member>
+        <member name="P:StackExchange.Precompilation.PrecompilerSection.CompileModules">
+            <summary>
+            Gets the <see cref="T:StackExchange.Precompilation.CompileModulesCollection"/>.
+            </summary>
+        </member>
+        <member name="P:StackExchange.Precompilation.PrecompilerSection.Current">
+            <summary>
+            Gets the <c>stackExchange.precompiler</c> section from the <see cref="T:System.Configuration.ConfigurationManager"/>.
+            </summary>
+        </member>
+        <member name="P:StackExchange.Precompilation.RazorCacheElement.Directory">
+            <summary>
+            The type of the <see cref="T:StackExchange.Precompilation.ICompileModule"/> to be loaded at compile time.
+            </summary>
+        </member>
+    </members>
+</doc>

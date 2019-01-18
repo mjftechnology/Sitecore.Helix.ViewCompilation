@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Sitecore Helix and Precompilation gotcha demo</title>
+</head>
+<body>
+<div>
+    <H2>Sitecore Helix and Precompilation gotcha demo</H2>
+    <p>This code attempts to demonstrate the gotcha pertaining to using the same view paths in multiple projects with the RazorGenerator and 
+        StackExchange view precompilation libraries. Since Sitecore best practice recommends the use of separate projects for each Feature
+        module there is a small chance this may crop up in real life Sitecore websites. Note: The issue manifests itself in a standard .NET 
+        website so for the purposes of this demo there is no dependency on Sitecore itself.</p>
+    
+    <h3>To reproduce the issue</h3>
+    <p>Observe the result of clicking each of the links below. Each controller is requesting their own view from their own assembly, yet the 
+        Feature B view is always rendered.</p>
+    <p>Razor Generator Precompilation View Engine v2.4.9 </p>
+    <ul>
+        <li>@Html.ActionLink("Feature A Razor Gen page view", "FeatureARazorGen", "Home") (should show Feature A text)</li>
+        <li>@Html.ActionLink("Feature B Razor Gen page view", "FeatureBRazorGen", "Home") (should show Feature B text)</li>
+    </ul>
+    <p>Stack Exchange Precompilation View Engine v4.7.0</p>
+    <ul>
+        <li>@Html.ActionLink("Feature A Stack Exchange view", "FeatureAStackExchange", "Home") (should show Feature A text)</li>
+        <li>@Html.ActionLink("Feature B Stack Exchange view", "FeatureBStackExchange", "Home") (should show Feature B text)</li>
+    </ul>
+    
+    <h3>Why does this occur?</h3>
+    <p>In a nutshell the StackExchange precompilation DLL uses a Dictionary keyed on the virtual path of any views in dependent assemblies. When the StackExchange dll scans the
+        Feature assemblies for compiled views it generates the same virtual view path (~/Views/Shared/Index.cshtml) for both assemblies and therefore the alphabetically last 'FeatureB' view will always be loaded
+        regardless. Hence any requests for the Feature A view will always render the view from Feature B.</p>
+    <p>The Razor generator code uses a similar _mappings dictionary for the views also keyed on the virtual view path so exhibits the same problem/</p>
+        
+    <p>See <a href="http://www.mattfletcher.co.uk/?s=view+compilation">my blog</a> for more information.</p>
+    <p>17/01/2019 MF</p>
+</div>
+</body>
+</html>

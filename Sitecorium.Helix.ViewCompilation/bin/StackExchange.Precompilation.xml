@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>StackExchange.Precompilation</name>
+    </assembly>
+    <members>
+        <member name="T:StackExchange.Precompilation.CompiledFromDirectoryAttribute">
+            <summary>
+            Decorates a precompiled MVC assembly. Used to calculate relative view paths.
+            </summary>
+        </member>
+        <member name="P:StackExchange.Precompilation.CompiledFromDirectoryAttribute.SourceDirectory">
+            <summary>
+            Gets the source directory path.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.CompiledFromDirectoryAttribute.#ctor(System.String)">
+            <summary></summary>
+            <param name="sourceDirectory"></param>
+        </member>
+        <member name="T:StackExchange.Precompilation.CompiledFromFileAttribute">
+            <summary>
+            Decorates a precompiled MVC page.
+            </summary>
+        </member>
+        <member name="P:StackExchange.Precompilation.CompiledFromFileAttribute.SourceFile">
+            <summary>
+            Gets the source file path.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.CompiledFromFileAttribute.#ctor(System.String)">
+            <summary></summary>
+            <param name="sourceFile"></param>
+        </member>
+        <member name="M:StackExchange.Precompilation.Hacks.SetOverriddenLayoutPath(System.Web.Mvc.WebViewPage,System.String)">
+            <summary>
+            Sets the WebViewPage.OverridenLayoutPath internal property, the only way to handle
+            <see cref="P:System.Web.Mvc.ViewResult.MasterName" /> values.
+            </summary>
+            <remarks>
+            Using reflection to get a mis-spelled internal property setter and calling it via reflection.
+            What could possibly go wrong?
+            </remarks>
+        </member>
+        <member name="M:StackExchange.Precompilation.Hacks.MakeValueTuplesWorkWhenRunningOn47RuntimeAndTargetingNet45Plus(Microsoft.CodeAnalysis.CSharp.CSharpCompilation)">
+            <summary>
+            Bear with me, so, in case a the view engine is being executed in a page targeting net45+ (including net46*)
+            on a system that has net47+ installed, mscorlib contained referenced by BuildManager already
+            contains ValueTuple, but due to this package referencing CodeAnalysis.Common, which also pulls in
+            the System.ValueTuple package, that gets copied to /bin, and is therefore also picked up as a
+            reference in build manager.
+            This causes compilation.GetTypeByMetadataName("System.ValueTuple`2") to return null due to an
+            ambigous match, resulting in the lovely CS8137 and CS8179 warnings, at runtime.
+            The contents of the /bin directory get included due to the default <![CDATA[<add name="*" />]]> entry.
+            <![CDATA[<remove name="*" />]]> doesn't work since it fails to load the assembly generated for global.asax.cs
+            <![CDATA[<remove name="System.ValueTuple" />]]> doesn't work, since the wildcard takes preference
+            https://referencesource.microsoft.com/#System.Web/Configuration/CompilationSection.cs,119d7e4aae57b4b6
+            <para />
+            So when this is the case, we need to remove the reference to the System.ValueTuple.dll
+            </summary>
+            <param name="compilation"></param>
+            <returns></returns>
+        </member>
+        <member name="T:StackExchange.Precompilation.PrecompilationVirtualPathFactory">
+            <summary>
+            <see cref="P:System.Web.WebPages.WebPageExecutingBase.VirtualPathFactory"/> is used for resolving virtual paths once a view has
+            been resolved. Setting it to an <see cref="T:System.Web.WebPages.IVirtualPathFactory"/> assumes that all underlying virtual paths
+            are resolvable (layouts partials etc) are resolvable using the given instance. This can lead to some side 
+            effect when different view engines are combined, and the matching views are intermixed.
+            </summary>
+            <remarks>
+            This is our version of the <see cref="T:System.Web.WebPages.VirtualPathFactoryManager"/>, which is meant for extending the pipeline,
+            mentioned above, but is not extendable in the sense that it always falls back to <see cref="T:System.Web.Compilation.BuildManager"/>,
+            which calls the old csc.exe in the framework dir, not the shiny one from our nuget package,
+            and can thus cause unexpected behavior at runtime.
+            </remarks>
+        </member>
+        <member name="T:StackExchange.Precompilation.PrecompiledViewEngine">
+            <summary>
+            Supports loading of precompiled views.
+            </summary>
+        </member>
+        <member name="P:StackExchange.Precompilation.PrecompiledViewEngine.ViewPaths">
+            <summary>
+            Gets the view paths
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.#ctor(System.String)">
+            <summary>
+            Creates a new PrecompiledViewEngine instance, scanning all assemblies in <paramref name="findAssembliesInPath"/> for precompiled views.
+            Precompiled views are types deriving from <see cref="T:System.Web.WebPages.WebPageRenderingBase"/> decorated with a <see cref="T:StackExchange.Precompilation.CompiledFromFileAttribute" />
+            </summary>
+            <param name="findAssembliesInPath">The path to scan for assemblies with precompiled views.</param>
+            <remarks>
+            Use this constructor if you use aspnet_compiler.exe with it's targetDir parameter instead of StackExchange.Precompilation.Build.
+            </remarks>
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.#ctor(System.Reflection.Assembly[])">
+            <summary>
+            Creates a new PrecompiledViewEngine instance, scanning the provided <paramref name="assemblies"/> for precompiled views.
+            Precompiled views are types deriving from <see cref="T:System.Web.WebPages.WebPageRenderingBase"/> decorated with a <see cref="T:StackExchange.Precompilation.CompiledFromFileAttribute" />
+            </summary>
+            <param name="assemblies">The assemblies to scan for precompiled views.</param>
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.CreateVirtualPathFactory">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.CreatePartialView(System.Web.Mvc.ControllerContext,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.CreateView(System.Web.Mvc.ControllerContext,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.FindPartialView(System.Web.Mvc.ControllerContext,System.String,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.PrecompiledViewEngine.FindView(System.Web.Mvc.ControllerContext,System.String,System.String,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:StackExchange.Precompilation.ProfiledVirtualPathProviderViewEngine">
+            <summary>
+            Base class for implementing <see cref="T:System.Web.Mvc.VirtualPathProviderViewEngine"/> derived types that provide custom profiling steps.
+            </summary>
+        </member>
+        <member name="P:StackExchange.Precompilation.ProfiledVirtualPathProviderViewEngine.ProfileStep">
+            <summary>
+            Triggers when the engine performs a step that can be profiled.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.ProfiledVirtualPathProviderViewEngine.#ctor">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.ProfileVirtualPathProviderViewEngineExtensions.DoProfileStep(StackExchange.Precompilation.ProfiledVirtualPathProviderViewEngine,System.String)">
+            <summary>
+            Invokes the <see cref="P:StackExchange.Precompilation.ProfiledVirtualPathProviderViewEngine.ProfileStep"/> if it's set.
+            </summary>
+        </member>
+        <member name="T:StackExchange.Precompilation.RoslynRazorViewEngine">
+            <summary>
+            A replacement for the <see cref="T:System.Web.Mvc.RazorViewEngine"/> that uses roslyn (<see cref="N:Microsoft.CodeAnalysis"/>) instead of <see cref="N:System.CodeDom"/> to compile views.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.RoslynRazorViewEngine.#ctor">
+            <summary>
+            Creates a new <see cref="T:StackExchange.Precompilation.RoslynRazorViewEngine"/> instance.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.RoslynRazorViewEngine.CreateVirtualPathFactory">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.RoslynRazorViewEngine.CreatePartialView(System.Web.Mvc.ControllerContext,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:StackExchange.Precompilation.RoslynRazorViewEngine.CreateView(System.Web.Mvc.ControllerContext,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="E:StackExchange.Precompilation.RoslynRazorViewEngine.CompilingPath">
+            <summary>
+            This is the equivalent of the <see cref="E:System.Web.WebPages.Razor.RazorBuildProvider.CompilingPath"/> event, since <see cref="T:StackExchange.Precompilation.PrecompiledViewEngine"/> bypasses <see cref="T:System.Web.WebPages.Razor.RazorBuildProvider"/> completely.
+            </summary>
+        </member>
+        <member name="M:StackExchange.Precompilation.RoslynRazorViewEngine.OnBeforeCompilePath(System.Web.WebPages.Razor.CompilingPathEventArgs)">
+            <summary>
+            Raises the <see cref="E:StackExchange.Precompilation.RoslynRazorViewEngine.CompilingPath"/> event.
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="E:StackExchange.Precompilation.RoslynRazorViewEngine.CodeGenerationStarted">
+            <summary>
+            This is the equivalent of the <see cref="E:System.Web.WebPages.Razor.RazorBuildProvider.CodeGenerationStarted"/> event, since <see cref="T:StackExchange.Precompilation.PrecompiledViewEngine"/> bypasses <see cref="T:System.Web.WebPages.Razor.RazorBuildProvider"/> completely.
+            </summary>
+        </member>
+        <member name="E:StackExchange.Precompilation.RoslynRazorViewEngine.CodeGenerationCompleted">
+            <summary>
+            This is the equivalent of the <see cref="E:System.Web.WebPages.Razor.RazorBuildProvider.CodeGenerationCompleted"/> event, since <see cref="T:StackExchange.Precompilation.PrecompiledViewEngine"/> bypasses <see cref="T:System.Web.WebPages.Razor.RazorBuildProvider"/> completely.
+            </summary>
+        </member>
+    </members>
+</doc>
